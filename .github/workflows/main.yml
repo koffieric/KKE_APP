@@ -17,18 +17,17 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev cmake libffi-dev libssl-dev libncurses-dev
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
       - name: Accept Android Licenses
         run: |
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
           echo "8933bad161afb4d0a9c4a51a1b0e5b4c7c0b5e0a0d0a0e0f0a0b0c0d0e0f0a0" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license || true
-          yes | sdkmanager --licenses || true
         continue-on-error: true
       - name: Build
         run: |
-          yes | buildozer -v android debug || buildozer android debug
+          yes | buildozer -v android debug
         env:
           ACCEPT_ANDROID_SDK_LICENSES: "1"
       - name: Upload APK
