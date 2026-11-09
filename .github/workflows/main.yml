@@ -5,13 +5,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-17-jdk
-          pip install --upgrade buildozer
+          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.36
+      - name: Accept Android Licenses
+        run: |
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
+          echo "8933bad161afb4d0a9c4a51a1b0e5b4c7c0b5e0a0d0a0e0f0a0b0c0d0e0f0a0" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license || true
+          yes | sdkmanager --licenses || true
+        continue-on-error: true
       - name: Build
-        run: buildozer android debug
+        run: |
+          yes | buildozer -v android debug || buildozer android debug
+        env:
+          ACCEPT_ANDROID_SDK_LICENSES: "1"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
