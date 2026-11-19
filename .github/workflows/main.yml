@@ -29,8 +29,16 @@ jobs:
           mv cmdline-tools $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
           ln -sf $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
           yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      - name: Fix spec for Android
+        run: |
+          sed -i "s/^requirements.*/requirements = python3,kivy/" buildozer.spec
+          sed -i "s/^android.arch.*/android.arch = arm64-v8a/" buildozer.spec
+          sed -i "s/^android.api.*/android.api = 31/" buildozer.spec
+          sed -i "s/^android.minapi.*/android.minapi = 21/" buildozer.spec
+          sed -i "s/^android.ndk.*/android.ndk = 25b/" buildozer.spec
+          sed -i "s/^android.sdk.*/android.sdk = 31/" buildozer.spec
+          grep -E "requirements|android.arch|android.api|android.minapi|android.ndk" buildozer.spec
       - name: Build
         run: |
           buildozer -v android debug
