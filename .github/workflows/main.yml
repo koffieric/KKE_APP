@@ -30,15 +30,25 @@ jobs:
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
           ln -sf $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
           yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-      - name: Fix spec for Android
+      - name: Force fix spec
         run: |
-          sed -i "s/^requirements.*/requirements = python3,kivy/" buildozer.spec
-          sed -i "s/^android.arch.*/android.arch = arm64-v8a/" buildozer.spec
-          sed -i "s/^android.api.*/android.api = 31/" buildozer.spec
-          sed -i "s/^android.minapi.*/android.minapi = 21/" buildozer.spec
-          sed -i "s/^android.ndk.*/android.ndk = 25b/" buildozer.spec
-          sed -i "s/^android.sdk.*/android.sdk = 31/" buildozer.spec
-          grep -E "requirements|android.arch|android.api|android.minapi|android.ndk" buildozer.spec
+          python3 -c "
+          lines = open('buildozer.spec').readlines()
+          out = []
+          for l in lines:
+              s = l.strip()
+              if s.startswith('requirements') or s.startswith('#requirements') or s.startswith('android.arch') or s.startswith('#android.arch') or s.startswith('android.api') or s.startswith('#android.api') or s.startswith('android.minapi') or s.startswith('#android.minapi') or s.startswith('android.ndk') or s.startswith('#android.ndk') or s.startswith('android.sdk') or s.startswith('#android.sdk'):
+                  continue
+              out.append(l)
+          out.append('requirements = python3,kivy\n')
+          out.append('android.archs = arm64-v8a\n')
+          out.append('android.api = 31\n')
+          out.append('android.minapi = 21\n')
+          out.append('android.ndk = 25b\n')
+          out.append('android.sdk = 31\n')
+          open('buildozer.spec','w').writelines(out)
+          "
+          cat buildozer.spec | grep -E "requirements|android.archs|android.api|android.minapi|android.ndk|android.sdk"
       - name: Build
         run: |
           buildozer -v android debug
